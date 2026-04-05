@@ -1,0 +1,353 @@
+\documentclass[12pt, a4paper]{ctexart}
+\usepackage{geometry}
+\geometry{left=2.5cm, right=2.5cm, top=3cm, bottom=3cm}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage[label=corner]{karnaugh-map}
+\usepackage{subcaption}
+\usetikzlibrary{arrows, shapes.gates.logic.US}
+\tikzset{
+    dot/.style={circle, fill, inner sep=1pt}
+}
+\ctikzset{
+    logic ports=ieee,
+    logic ports/scale=0.8
+}
+
+\begin{document}
+
+\section*{第3章习题}
+
+\subsection*{3.}
+
+\begin{equation}
+    F_1=AB+\overline AC+\overline ABD
+\end{equation}
+
+\begin{equation}
+    F_2=\overline ABD+\overline AC+\overline BCD+A\overline BC\overline D
+\end{equation}
+
+\subsection*{4.}
+
+可画出电路图
+
+\begin{figure}[h]
+    \centering
+    \begin{circuitikz}
+        \node[left] (A) at (0,0) {A};
+        \node[left] (B) at (0,-0.5) {B};
+        \node[left] (C) at (0,-1) {C};
+        \node[left] (D) at (0,-1.5) {D};
+        \node[right] (F) at (5.5, -1) {F};
+
+        \node[and gate US, draw, logic gate inputs=nnn] (and1) at (1.5,-0.5) {};
+        \node[not gate US, draw] (not1) at (3,0) {};
+        \node[xor gate US, draw, logic gate inputs=nn] (xor1) at (3, -1) {};
+        \node[nor gate US, draw, logic gate inputs=nnn] (nor1) at (4.5, -1) {};
+        
+        \draw (A) -- (not1.input);
+        \draw (A) -- (0.5,0) node[dot]{} |- (and1.input 1);
+        \draw (B) -- (and1.input 2);
+        \draw (C) -- (0.5,-1) |- (and1.input 3);
+        \draw (and1.output) -- (2.2,-0.5) |- (xor1.input 1);
+        \draw (D) -- (2.2,-1.5) node[dot]{}  |- (xor1.input 2);
+        \draw (xor1.output) -- (nor1.input 2);
+        \draw (not1.output) -- (3.7,0) |- (nor1.input 1);
+        \draw (D) -- (3.7,-1.5) |- (nor1.input 3);
+        \draw (nor1.output) -- (F);
+    \end{circuitikz}
+    \caption{原始电路图}
+\end{figure}
+
+将表达式转为 SOP 形式，有
+
+\begin{equation}
+    \begin{aligned}
+        F &= \overline{ABC\oplus D+\overline A+D}
+        \\&= \overline{ABC\overline D+\overline{ABC}D+\overline A+D}
+        \\&= \overline{ABC\overline D+\overline A+D}
+        \\&= \overline{\overline A+BC\overline D+D}
+        \\&= \overline{\overline A+BC+D}
+        \\&= A\overline B\,\overline D+A\overline C\,\overline D&(SOP)
+    \end{aligned}
+\end{equation}
+
+此时电路图为
+
+\begin{figure}[h]
+    \centering
+    \begin{circuitikz}
+        \node[above] (A) at (0,0) {A};
+        \node[above] (B) at (0.5,0) {B};
+        \node[above] (C) at (1,0) {C};
+        \node[above] (D) at (1.5,0) {D};
+
+        \node[and gate US, draw, logic gate inputs=nnnnn] (and1) at (4,-0.5) {};
+        \node[and gate US, draw, logic gate inputs=nnnnn] (and2) at (4,-2) {};
+        \node[not gate US, draw] (not1) at (2,0 |- and1.input 3) {};
+        \node[not gate US, draw] (not2) at (2.5,0 |- and1.input 5) {};
+        \node[not gate US, draw] (not3) at (2,0 |- and2.input 3) {};
+        \node[not gate US, draw] (not4) at (2.5,0 |- and2.input 5) {};
+        \node[or gate US, draw, logic gate inputs=nn] (or1) at (6,-1.25) {};
+        
+        \draw (A) -- (0,-2.5);
+        \draw (B) -- (0.5,-2.5);
+        \draw (C) -- (1,-2.5);
+        \draw (D) -- (1.5,-2.5);
+        \draw (A) |- node[dot]{} (and1.input 1);
+        \draw (B) |- node[dot]{} (not1.input);
+        \draw (not1.output) -- (and1.input 3);
+        \draw (D) |- node[dot]{} (not2.input);
+        \draw (not2.output) -- (and1.input 5);
+        \draw (A) |- node[dot]{} (and2.input 1);
+        \draw (C) |- node[dot]{} (not3.input);
+        \draw (not3.output) -- (and2.input 3);
+        \draw (D) |- node[dot]{} (not4.input);
+        \draw (not4.output) -- (and2.input 5);
+        \draw (and1.output) -- (5,-0.5) |- (or1.input 1);
+        \draw (and2.output) -- (5,-2) |- (or1.input 2);
+        \draw (or1.output) -- (7,-1.25) node[right] {F};
+    \end{circuitikz}
+    \caption{SOP 电路图}
+\end{figure}
+
+\subsection*{6.}
+
+根据题意，可写出表达式
+
+\begin{equation}
+    \begin{aligned}
+        O_0&=\overline I_0\overline I_1\overline I_2\overline I_3I_4
+            +\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4I_5
+            +\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5I_6
+            +\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5\overline I_6I_7
+        \\ &=\overline{
+            \overline{\overline I_0\overline I_1\overline I_2\overline I_3I_4}\cdot
+            \overline{\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4I_5}\cdot
+            \overline{\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5I_6}\cdot
+            \overline{\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5\overline I_6I_7}
+        }
+    \end{aligned}
+\end{equation}
+
+\begin{equation}
+    \begin{aligned}
+        O_1&=\overline I_0\overline I_1I_2
+            +\overline I_0\overline I_1\overline I_2I_3
+            +\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5I_6
+            +\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5\overline I_6I_7
+        \\ &=\overline{
+            \overline{\overline I_0\overline I_1I_2}\cdot
+            \overline{\overline I_0\overline I_1\overline I_2I_3}\cdot
+            \overline{\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5I_6}\cdot
+            \overline{\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5\overline I_6I_7}
+        }
+    \end{aligned}
+\end{equation}
+
+\begin{equation}
+    \begin{aligned}
+        O_2&=\overline I_0I_1
+            +\overline I_0\overline I_1\overline I_2I_3
+            +\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4I_5
+            +\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5\overline I_6I_7
+        \\ &=\overline{
+            \overline{\overline I_0I_1}\cdot
+            \overline{\overline I_0\overline I_1\overline I_2I_3}\cdot
+            \overline{\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4I_5}\cdot
+            \overline{\overline I_0\overline I_1\overline I_2\overline I_3\overline I_4\overline I_5\overline I_6I_7}
+        }
+    \end{aligned}
+\end{equation}
+
+\begin{equation}
+    Z=I_0
+\end{equation}
+
+由此画出电路图
+
+\begin{figure}[h]
+    \centering
+    \begin{circuitikz}
+        \foreach \i in {0,...,7} {
+            \node[above] (I\i) at (\i,0) {$I_\i$};
+            \draw (I\i) -- (\i,-9);
+            \node[not gate US, draw, rotate=-90] (not\i) at (0.5+\i,-0.5) {};
+            \draw (I\i) |- node[dot]{} (0.5+\i,-0.2) -- (not\i.input);
+            \draw (not\i.output) -- (0.5+\i,-9);
+        }
+        \foreach \n [count=\i] in {2,...,8} {
+            \node[nand port, number inputs=\n] (nand\n) at (9, -0.7-\i*1.1) {};
+            \foreach \j [count=\k] in {0,...,\i} {
+                \ifnum \j=\i
+                    \draw (I\j) |- node[dot]{} (nand\n.in \k);
+                \else
+                    \draw (not\j.output) |- node[dot]{} (nand\n.in \k);
+                \fi
+            }
+        }
+        \node[nand port, number inputs=4, rotate=90] (O0) at (10.5,-0.8) {};
+        \node[nand port, number inputs=4, rotate=90] (O1) at (11.5,-0.8) {};
+        \node[nand port, number inputs=4, rotate=90] (O2) at (12.5,-0.8) {};
+        \node[above] (Zlabel) at (9.5,0) {$Z$};
+        \node[above] (O0label) at (10.5,0) {$O_0$};
+        \node[above] (O1label) at (11.5,0) {$O_1$};
+        \node[above] (O2label) at (12.5,0) {$O_2$};
+        \draw (I0) |- node[dot]{} (9.5,-1.1) |- (Zlabel.south);
+        \foreach \n [count=\i] in {2,...,8} {
+            \draw (nand\n.out) -- (13.2,-0.7-\i*1.1);
+        }
+        \draw (O0.bin 1) |- node[dot]{} (nand5.out);
+        \draw (O0.bin 2) |- node[dot]{} (nand6.out);
+        \draw (O0.bin 3) |- node[dot]{} (nand7.out);
+        \draw (O0.bin 4) |- node[dot]{} (nand8.out);
+        \draw (O1.bin 1) |- node[dot]{} (nand3.out);
+        \draw (O1.bin 2) |- node[dot]{} (nand4.out);
+        \draw (O1.bin 3) |- node[dot]{} (nand7.out);
+        \draw (O1.bin 4) |- node[dot]{} (nand8.out);
+        \draw (O2.bin 1) |- node[dot]{} (nand2.out);
+        \draw (O2.bin 2) |- node[dot]{} (nand4.out);
+        \draw (O2.bin 3) |- node[dot]{} (nand6.out);
+        \draw (O2.bin 4) |- node[dot]{} (nand8.out);
+    \end{circuitikz}
+    \caption{与非门电路图}
+\end{figure}
+
+优先级顺序为 $I_0>I_1>I_2>I_3>I_4>I_5>I_6>I_7$
+
+\newpage
+
+\subsection*{7.}
+
+\begin{figure}[h]
+    \centering
+    \subcaptionbox{第一问}{
+        \begin{circuitikz}
+            \node[muxdemux,
+                muxdemux label={L1=000, L2=001, L3=010, L4=011,
+                                L5=100, L6=101, L7=110, L8=111},    
+            ] (mux) {\rotatebox{-90}{MUX}};
+            \foreach \val [count=\i] in {0,1,1,0,1,0,0,0} {
+                \node[left] (D\i) at (mux.lpin \i) {\val};
+            }
+            \node[below] (A) at (mux.bpin 1) {A};
+            \node[below] (B) at (mux.bpin 2) {B};
+            \node[below] (C) at (mux.bpin 3) {C};
+            \node[right] (F) at (mux.rpin 1) {F};
+        \end{circuitikz}
+    }
+    \subcaptionbox{第二问}{
+        \begin{circuitikz}
+            \node[muxdemux,
+                muxdemux def={Lh=4, Rh=2, NL=4, NB=2},
+                muxdemux label={L1=00, L2=01, L3=10, L4=11}
+            ] (mux) at (3,0) {\rotatebox{-90}{MUX}};
+            \node[left] (C) at (0,0 |- mux.lpin 1) {C};
+            \node[left] (zero) at (0,0 |- mux.lpin 4) {0};
+            \node[not gate US, draw] (not1) at (0.8,0 |- mux.lpin 2) {};
+            \node[right] (F) at (mux.rpin 1) {F};
+            \node[below] (A) at (mux.bpin 1) {A};
+            \node[below] (B) at (mux.bpin 2) {B};
+            \draw (C) -- (mux.lpin 1);
+            \draw (zero) -- (mux.lpin 4);
+            \draw (C) -- (0.4,0 |- mux.lpin 1) node[dot]{} |- (not1.input);
+            \draw (not1.output) -- (mux.lpin 2);
+            \draw (not1.output) -- (1.5,0 |- mux.lpin 2) node[dot]{} |- (mux.lpin 3);
+        \end{circuitikz}
+    }
+    \subcaptionbox{第三问}{
+        \begin{circuitikz}
+            \node[muxdemux,
+                muxdemux def={Lh=4, Rh=2, NL=2, NB=1},
+                muxdemux label={L1=0, L2=1}
+            ] (mux) at (3.5,-1) {\rotatebox{-90}{MUX}};
+            \node[xor gate US, draw] (xor) at (1.5,0 |- mux.lpin 1) {};
+            \node[nor gate US, draw] (nor) at (1.5,0 |- mux.lpin 2) {};
+            \node[above] (B) at (0,0) {B};
+            \node[above] (C) at (0.5,0) {C};
+            \node[right] (F) at (mux.rpin 1) {F};
+            \node[below] (A) at (mux.bpin 1) {A};
+            \draw (B) -- (0,-2) |- node[dot]{} (xor.input 1);
+            \draw (C) -- (0.5,-2) |- node[dot]{} (xor.input 2);
+            \draw (B) |- node[dot]{} (nor.input 1);
+            \draw (C) |- node[dot]{} (nor.input 2);
+            \draw (xor.output) -- (mux.lpin 1);
+            \draw (nor.output) -- (mux.lpin 2);
+        \end{circuitikz}
+    }
+    \caption{三种电路图}
+\end{figure}
+
+\subsection*{9.}
+
+\subsubsection*{(1)}
+
+\begin{figure}[h]
+    \centering
+    \begin{karnaugh-map}[4][4][1][D][C][B][A]
+        \manualterms{X,X,X,0,
+                    0,X,0,X,
+                    1,0,X,1,
+                    1,1,X,1}
+        \implicant{12}{14}
+        \implicant{15}{10}
+        \implicantedge{12}{8}{14}{10}
+    \end{karnaugh-map}
+    \caption{卡诺图}
+\end{figure}
+
+所以
+
+\begin{equation}
+    F=AB+AC+A\overline D
+\end{equation}
+
+\newpage
+
+\subsubsection*{(2)}
+
+\begin{figure}[h]
+    \centering
+    \begin{circuitikz}
+        \node[above] (A) at (0,0) {A};
+        \node[above] (B) at (0.5,0) {B};
+        \node[above] (C) at (1,0) {C};
+        \node[above] (D) at (1.5,0) {D};
+        \draw (A) -- (0,-3);
+        \draw (B) -- (0.5,-3);
+        \draw (C) -- (1,-3);
+        \draw (D) -- (1.5,-3);
+        \node[and gate US, draw, logic gate inputs=nnn] (and1) at (3,-0.5) {};
+        \node[and gate US, draw, logic gate inputs=nnn] (and2) at (3,-1.5) {};
+        \node[and gate US, draw, logic gate inputs=nnn] (and3) at (3,-2.5) {};
+        \draw (A) |- node[dot]{} (and1.input 1);
+        \draw (B) |- node[dot]{} (and1.input 3);
+        \draw (A) |- node[dot]{} (and2.input 1);
+        \draw (C) |- node[dot]{} (and2.input 3);
+        \draw (A) |- node[dot]{} (and3.input 1);
+        \node[not gate US, draw] (not1) at (2,0 |- and3.input 3) {};
+        \draw (D) |- node[dot]{} (not1.input);
+        \draw (not1.output) -- (and3.input 3);
+        \node[or gate US, draw, logic gate inputs=nnn] (or1) at (5,-1.5) {};
+        \draw (and1.output) -- (4,-0.5) |- (or1.input 1);
+        \draw (and2.output) -- (4,-1.5) |- (or1.input 2);
+        \draw (and3.output) -- (4,-2.5) |- (or1.input 3);
+        \draw (or1.output) -- (6,-1.5) node[right] {F};
+    \end{circuitikz}
+    \caption{化简后的电路图}
+\end{figure}
+
+\subsubsection*{(3)}
+
+不存在竞争冒险，因为与门的所有输入都不包含逻辑相反的信号。
+
+\subsection*{11.}
+
+\begin{itemize}
+    \item (a) $T_{\text{pd}}=95\text{ps},T_{\text{cd}}=25\text{ps}$
+    \item (b) $T_{\text{pd}}=125\text{ps},T_{\text{cd}}=45\text{ps}$
+    \item (c) $T_{\text{pd}}=60\text{ps},T_{\text{cd}}=35\text{ps}$
+\end{itemize}
+
+\end{document}
