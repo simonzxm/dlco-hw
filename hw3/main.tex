@@ -162,7 +162,7 @@
 \end{equation}
 
 \begin{equation}
-    Z=I_0
+    Z = \overline{\overline{\overline{I_0} \cdot \overline{I_1} \cdot \overline{I_2} \cdot \overline{I_3} \cdot \overline{I_4} \cdot \overline{I_5} \cdot \overline{I_6} \cdot \overline{I_7}}}
 \end{equation}
 
 由此画出电路图
@@ -172,10 +172,10 @@
     \begin{circuitikz}
         \foreach \i in {0,...,7} {
             \node[above] (I\i) at (\i,0) {$I_\i$};
-            \draw (I\i) -- (\i,-9);
+            \draw (I\i) -- (\i,-10);
             \node[not gate US, draw, rotate=-90] (not\i) at (0.5+\i,-0.5) {};
             \draw (I\i) |- node[dot]{} (0.5+\i,-0.2) -- (not\i.input);
-            \draw (not\i.output) -- (0.5+\i,-9);
+            \draw (not\i.output) -- (0.5+\i,-10);
         }
         \foreach \n [count=\i] in {2,...,8} {
             \node[nand port, number inputs=\n] (nand\n) at (9, -0.7-\i*1.1) {};
@@ -190,11 +190,9 @@
         \node[nand port, number inputs=4, rotate=90] (O0) at (10.5,-0.8) {};
         \node[nand port, number inputs=4, rotate=90] (O1) at (11.5,-0.8) {};
         \node[nand port, number inputs=4, rotate=90] (O2) at (12.5,-0.8) {};
-        \node[above] (Zlabel) at (9.5,0) {$Z$};
         \node[above] (O0label) at (10.5,0) {$O_0$};
         \node[above] (O1label) at (11.5,0) {$O_1$};
         \node[above] (O2label) at (12.5,0) {$O_2$};
-        \draw (I0) |- node[dot]{} (9.5,-1.1) |- (Zlabel.south);
         \foreach \n [count=\i] in {2,...,8} {
             \draw (nand\n.out) -- (13.2,-0.7-\i*1.1);
         }
@@ -210,6 +208,13 @@
         \draw (O2.bin 2) |- node[dot]{} (nand4.out);
         \draw (O2.bin 3) |- node[dot]{} (nand6.out);
         \draw (O2.bin 4) |- node[dot]{} (nand8.out);
+        \node[nand port, number inputs=8] (nandZ) at (9,-9.5) {};
+        \node[not gate US, draw] (notZ) at (10.5,-9.5) {};
+        \draw (nandZ.out) -- (notZ.input);
+        \draw (notZ.output) -- (11.5,-9.5) node[right] {$Z$};
+        \foreach \n [count=\i] in {0,...,7} {
+            \draw (not\n.output) |- node[dot]{} (nandZ.in \i);
+        }
     \end{circuitikz}
     \caption{与非门电路图}
 \end{figure}
