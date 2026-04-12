@@ -129,7 +129,7 @@
             \node[right] (Y7) at (decoder.rpin 8) {$Y_{7,L}$};
         \end{circuitikz}
     }
-    \subcaptionbox{电路图}{\includegraphics[width=0.5\textwidth]{assets/exp1/circuit.png}}
+    \subcaptionbox{电路图}{\includegraphics[width=0.45\textwidth]{assets/exp1/circuit.png}}
     \caption{译码器电路设计}
 \end{figure}
 
@@ -283,7 +283,7 @@
             \node[right] (O2) at (encoder.rpin 3) {$O_2$};
         \end{circuitikz}
     }
-    \subcaptionbox{电路图}{\includegraphics[width=0.6\textwidth]{assets/exp2/circuit.png}}
+    \subcaptionbox{电路图}{\includegraphics[width=0.7\textwidth]{assets/exp2/circuit.png}}
     \caption{编码器电路设计}
 \end{figure}
 
@@ -576,7 +576,7 @@ assign DC = NOERROR ? DU : (DU ^ (7'd1 << (parity - 3'd1)));
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{assets/exp4/error.png}
+    \includegraphics[width=\textwidth]{assets/exp4/error.png}
     \caption{汉明码纠错电路出现的错误}
 \end{figure}
 
@@ -647,6 +647,10 @@ endmodule
     \centering
     \subcaptionbox{}{\includegraphics[width=0.45\textwidth]{assets/exp5/sim1.png}}
     \subcaptionbox{}{\includegraphics[width=0.45\textwidth]{assets/exp5/sim2.png}}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
     \subcaptionbox{}{\includegraphics[width=0.45\textwidth]{assets/exp5/sim3.png}}
     \subcaptionbox{}{\includegraphics[width=0.45\textwidth]{assets/exp5/sim4.png}}
     \caption{8位桶形移位器仿真结果}
@@ -659,8 +663,87 @@ endmodule
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{assets/exp5/error.png}
+    \includegraphics[width=0.9\textwidth]{assets/exp5/error.png}
     \caption{8位桶形移位器出现的错误}
+\end{figure}
+
+\section{思考题}
+
+\subsection{四位补码加减法器}
+
+我们可以通过在加法器（Cin表示进位输入）的基础上增加一些逻辑来实现四位补码加减法器。
+当 \lstinline|addsub=0| 时，执行加法运算；当 \lstinline|addsub=1| 时，执行减法运算。
+
+具体的计算原理如下
+
+\begin{lstlisting}[language=Verilog, caption={四位补码加减法器设计原理}]
+module adder (
+    input [3:0] A,
+    input [3:0] B,
+    input addsub,
+    output [3:0] F,
+    output cf,
+    output of,
+    output sf,
+    output zf,
+);
+
+  assign {cf, F} = A + B ^ {4{addsub}} + addsub;
+  assign of = (addsub ^ (A[3] == B[3])) && (F[3] != A[3]);
+  assign sf = F[3];
+  assign zf = ~(|F);
+
+endmodule
+\end{lstlisting}
+
+据此可画出基于原有加法器模块的电路图，在 Logisim 中可以用隧道实现
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}
+        \node[muxdemux,
+            muxdemux def={Lh=3, Rh=3, NL=2, NT=1, NB=1, NR=1},
+            muxdemux label={L1=A, L2=B, T1=Cin, B1=Cout, R1=F}
+        ] (adder1) at (0,0) {};
+        \node[left] (A) at (adder1.lpin 1) {A};
+        \node[left] (B) at (adder1.lpin 2) {B};
+        \node[above] (addsub) at (adder1.tpin 1) {addsub};
+        \node[muxdemux,
+            muxdemux def={Lh=3, Rh=3, NL=1, NT=1, NB=1, NR=2},
+            muxdemux label={L1=F, T1=Cin, B1=Cout, R1=A, R2=B}
+        ] (adder2) at (0,-2) {};
+        \draw (adder1.rpin 1) -- (adder2.rpin 1);
+        \node[xor port, rotate=180, anchor=out] (xor1) at (adder2.rpin 2) {};
+        \node[right] at (xor1.in 1) {4\{addsub\}}; 
+        \node[right] at (xor1.in 2) {B};
+        \node[below] (cf) at (adder2.bpin 1) {CF};
+        \node[left] (F) at (adder2.lpin 1) {F};
+        \node[nor port, number inputs=4, anchor=in 4, rotate=180] (nor) at (-2,-2) {};
+        \draw (nor.in 1) |- (F);
+        \node[left] at (nor.out) {ZF};
+    \end{circuitikz}
+    \caption{四位补码加减法器电路设计（F,CF,ZF部分）}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}
+        \node[xnor port] (xnor) at (0,0) {};
+        \node[xor port] (xor1) at (0,-1.5) {};
+        \node[left] at (xnor.in 1) {A[3]};
+        \node[left] at (xnor.in 2) {B[3]};
+        \node[left] (F3) at (xor1.in 1) {F[3]};
+        \node[left] at (xor1.in 2) {B[3]};
+        \node[xor port, anchor=in 2] (xor2) at (2,0) {};
+        \node[left] at (xor2.in 1) {addsub};
+        \draw (xnor.out) -- (xor2.in 2);
+        \node[and port, anchor=in 1] (and) at (4,0 |- xnor.in 1) {};
+        \draw (xor2.out) -| (and.in 1);
+        \draw (xor1.out) -| (and.in 2);
+        \node[right] at (and.out) {OF};
+        \draw (F3) --++ (-1,0) node[left] {SF};
+    \end{circuitikz}
+    \caption{四位补码加减法器电路设计（OF,SF部分）}
 \end{figure}
 
 \end{document}
