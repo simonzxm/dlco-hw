@@ -746,4 +746,129 @@ endmodule
     \caption{四位补码加减法器电路设计（OF,SF部分）}
 \end{figure}
 
+\subsection{用 ALU 实现比较运算}
+
+我们可以将比较运算转化为减法运算，然后分析输出的标识位即可得出结论。
+我们可以调用之前设计的 ALU 来实现
+
+\begin{lstlisting}[language=Verilog, caption={用ALU实现比较运算设计原理}]
+module cmp (
+    input [3:0] X,
+    input [3:0] Y,
+    input is_signed,
+    output result
+);
+
+  wire [3:0] F;
+  wire cf, of, sf, zf;
+  adder adder_inst (
+      .A(X),
+      .B(Y),
+      .addsub(1'b1),
+      .F(F),
+      .cf(cf),
+      .of(of),
+      .sf(sf),
+      .zf(zf)
+  );
+
+  wire unsigned_le = (~cf) | zf;
+  wire signed_le = (sf ^ of) | zf;
+  assign result = is_signed ? signed_le : unsigned_le;
+
+endmodule
+\end{lstlisting}
+
+据此我们可以画出基于原有加法器模块的电路图
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}
+        \node[muxdemux,
+            muxdemux def={Lh=6, Rh=6, NL=4, NB=0, NR=6},
+            muxdemux label={L1=A, L2=B, L4=addsub, R1=F, R3=CF, R4=OF, R5=SF, R6=ZF},
+            draw only left pins={1,2,4},
+            draw only right pins={1,3,4,5,6}
+        ] (adder) at (0,0) {};
+        \node[xor port, anchor=in 1, scale=1.25] (xor) at (adder.rpin 4) {};
+        \node[muxdemux,
+            muxdemux def={Lh=3, Rh=1, NL=2, NB=0, NT=1},
+            anchor=lpin 2,
+        ] (mux) at (xor.out) {MUX};
+        \node[not gate US, draw, anchor=output] (not) at (mux.lpin 1) {};
+        \draw (adder.rpin 3) -- (not.input);
+        \node[above] (is_signed) at (mux.tpin 1) {\lstinline|is_signed|};
+        \node[or port, anchor=in 1] (or) at (mux.rpin 1) {};
+        \draw (adder.rpin 6) -| (or.in 2);
+        \node[right] (result) at (or.out) {\lstinline|result|};
+        \node[left] at (adder.lpin 4) {1};
+        \node[left] at (adder.lpin 1) {X};
+        \node[left] at (adder.lpin 2) {Y};
+    \end{circuitikz}
+    \caption{用ALU实现比较运算电路设计}
+\end{figure}
+
+\subsection{四位无符号二进制数比较器}
+
+令 $X_i=A_i\odot B_i$，则有
+
+\begin{equation}
+    F_{A=B} = X_3 \cdot X_2 \cdot X_1 \cdot X_0
+\end{equation}
+
+\begin{equation}
+    F_{A>B} = (A_3\overline{B_3}) + X_3(A_2\overline{B_2}) + X_3X_2(A_1\overline{B_1}) + X_3X_2X_1(A_0\overline{B_0})
+\end{equation}
+
+据此可画出电路图如下
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}
+        \foreach \k [count=\i] in {0,...,3} {
+            \node[xnor port, rotate=-90] (xnor\i) at (2*\k,0) {};
+            \node[above] (A\k) at (xnor\i.in 1) {$A_\k$};
+            \node[above] (B\k) at (xnor\i.in 2) {$B_\k$};
+            \draw (A\k) -| (2*\k+0.8,-8);
+            \draw (B\k) -| (2*\k-0.8,-8);
+            \draw (xnor\i.out) -- (2*\k,-8);
+        }
+        \node[and port, number inputs=4] (and) at (8,-1.5) {};
+        \draw (xnor1.out) |- node[circ]{} (and.in 1);
+        \draw (xnor2.out) |- node[circ]{} (and.in 2);
+        \draw (xnor3.out) |- node[circ]{} (and.in 3);
+        \draw (xnor4.out) |- node[circ]{} (and.in 4);
+        \node[right] at (and.out) {$F_{A=B}$};
+        \node[and port, number inputs=5] (and1) at (8,-3) {};
+        \node[notcirc, left] at (and1.bin 2) {};
+        \draw (0.8,0) |- node[circ]{} (and1.in 1);
+        \draw (-0.8,0) |- node[circ]{} (and1.in 2);
+        \draw (xnor2.out) |- node[circ]{} (and1.in 3);
+        \draw (xnor3.out) |- node[circ]{} (and1.in 4);
+        \draw (xnor4.out) |- node[circ]{} (and1.in 5);
+        \node[and port, number inputs=4] (and2) at (8,-4.5) {};
+        \node[notcirc, left] at (and2.bin 2) {};
+        \draw (2.8,0) |- node[circ]{} (and2.in 1);
+        \draw (1.2,0) |- node[circ]{} (and2.in 2);
+        \draw (xnor3.out) |- node[circ]{} (and2.in 3);
+        \draw (xnor4.out) |- node[circ]{} (and2.in 4);
+        \node[and port, number inputs=3] (and3) at (8,-6) {};
+        \node[notcirc, left] at (and3.bin 2) {};
+        \draw (4.8,0) |- node[circ]{} (and3.in 1);
+        \draw (3.2,0) |- node[circ]{} (and3.in 2);
+        \draw (xnor4.out) |- node[circ]{} (and3.in 3);
+        \node[and port] (and4) at (8,-7.5) {};
+        \node[notcirc, left] at (and4.bin 2) {};
+        \draw (6.8,0) |- node[circ]{} (and4.in 1);
+        \draw (5.2,0) |- node[circ]{} (and4.in 2);
+        \node[or port, number inputs=4, rotate=90] (or) at (11,-1.5) {};
+        \draw (and1.out) -| (or.in 1);
+        \draw (and2.out) -| (or.in 2);
+        \draw (and3.out) -| (or.in 3);
+        \draw (and4.out) -| (or.in 4);
+        \node[above] at (or.out) {$F_{A>B}$};
+    \end{circuitikz}
+    \caption{四位无符号二进制数比较器电路设计}
+\end{figure}
+
 \end{document}
