@@ -1,0 +1,229 @@
+\documentclass[12pt, a4paper]{ctexart}
+\usepackage{geometry}
+\geometry{left=2.5cm, right=2.5cm, top=3cm, bottom=3cm}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{arydshln}
+\usetikzlibrary{arrows, shapes.gates.logic.US}
+\ctikzset{
+    logic ports=ieee,
+    logic ports/scale=0.8,
+    multipoles/flipflop/pin spacing=0.4
+}
+
+\begin{document}
+
+\section*{第6章习题}
+
+\subsection*{3.}
+
+\begin{itemize}
+    \item \texttt{func1} 功能: 保留原始数值的最低 8 位, 其他位补零。
+    \item \texttt{func2} 功能: 保留原始数值的最低 8 位, 其他位补符号位。
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        \multicolumn{2}{|c|}{\texttt{w}} & \multicolumn{2}{c|}{\texttt{func1(w)}} & \multicolumn{2}{c|}{\texttt{func2(w)}} \\
+        \hline
+        机器数 & 值 & 机器数 & 值 & 机器数 & 值 \\
+        \hline
+        \texttt{0x0000007F} & 127 & \texttt{0x0000007F} & 127 & \texttt{0x0000007F} &  127 \\
+        \texttt{0x00000080} & 128 & \texttt{0x00000080} & 128 & \texttt{0xFFFFFF80} & -128 \\
+        \texttt{0x000000FF} & 255 & \texttt{0x000000FF} & 255 & \texttt{0xFFFFFFFF} &   -1 \\
+        \texttt{0x00000100} & 256 & \texttt{0x00000000} &   0 & \texttt{0x00000000} &    0 \\
+        \hline
+    \end{tabular}
+    \caption{习题 3 用表}
+\end{table}
+
+\subsection*{4.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{模式} & \multicolumn{2}{c|}{$x$} & \multicolumn{2}{c|}{$y$} & \multicolumn{2}{c|}{$x\times y$(截断前)} & \multicolumn{2}{c|}{$x\times y$(截断后)} \\
+        \cline{2-9}
+        & 机器数 & 值 & 机器数 & 值 & 机器数 & 值 & 机器数 & 值 \\
+        \hline
+        无符号数 & 110 & 6 & 010 & 2 & 001100 & 12 & 100 & 4 \\
+        二进制补码 & 110 & -2 & 010 & 2 & 111100 & -4 & 100 & -4 \\
+        \hline
+        无符号数 & 001 & 1 & 111 & 7 & 000111 & 7 & 111 & 7 \\
+        二进制补码 & 001 & 1 & 111 & -1 & 111111 & -1 & 111 & -1 \\
+        \hline
+        无符号数 & 111 & 7 & 111 & 7 & 110001 & 49 & 001 & 1 \\
+        二进制补码 & 111 & -1 & 111 & -1 & 000001 & 1 & 001 & 1 \\
+        \hline
+    \end{tabular}
+    \caption{习题 4 用表}
+\end{table}
+
+\subsection*{5.}
+
+$M=15,N=4$
+
+\subsection*{6.}
+
+记 $G_i=A_iB_i,P_i=A_i+B_i$，则有
+
+\subsubsection*{(1) 串行进位}
+
+\begin{itemize}
+    \item $C_1=G_1+P_1C_0$
+    \item $C_2=G_2+P_2C_1$
+    \item $C_3=G_3+P_3C_2$
+    \item $C_4=G_4+P_4C_3$
+\end{itemize}
+
+\subsubsection*{(2) 先行进位}
+
+\begin{itemize}
+    \item $C_1=G_1+P_1C_0$
+    \item $C_2=G_2+P_2G_1+P_2P_1C_0$
+    \item $C_3=G_3+P_3G_2+P_3P_2G_1+P_3P_2P_1C_0$
+    \item $C_4=G_4+P_4G_3+P_4P_3G_2+P_4P_3P_2G_1+P_4P_3P_2P_1C_0$
+\end{itemize}
+
+\subsection*{7.}
+
+\subsubsection*{(1)}
+
+\begin{equation}
+    \left[x+y\right]_\text{补}=0010B=2,
+    \left[x-y\right]_\text{补}=1000B=-8
+\end{equation}
+
+\subsubsection*{(2)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{cccccccc}
+        \hline
+        \multicolumn{4}{c}{P} && \multicolumn{3}{c}{Y} \\
+        \hline
+          & 0&0&0 &\multicolumn{1}{c|}{}& 1&0&1 \\ \hdashline
+        + & 1&0&1 &\multicolumn{1}{c|}{}&       \\ \cline{1-4}
+        0 & 1&0&1 &\multicolumn{1}{c|}{}& 1&0&1 \\ \cline{6-6}
+          & 0&1&0 && \multicolumn{1}{c|}{1}&1&0 \\ \hdashline
+        + & 0&0&0 && \multicolumn{1}{c|}{}      \\ \cline{1-4}
+        0 & 0&1&0 && \multicolumn{1}{c|}{1}&1&0 \\ \cline{7-7}
+          & 0&0&1 && 0&\multicolumn{1}{c|}{1}&1 \\ \hdashline
+        + & 1&0&1 && \multicolumn{2}{c|}{}      \\ \cline{1-4}
+        0 & 1&1&0 && 0&\multicolumn{1}{c|}{1}&1 \\ \cline{8-8}
+          & 0&1&1 && 0&0&\multicolumn{1}{c|}{1} \\ \hline
+    \end{tabular}
+\end{table}
+
+所以 $\left[x\times y\right]_\text{原}=1011001B=-25$
+
+\subsubsection*{(3)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ccccccccccc}
+        \hline
+        & \multicolumn{4}{c}{P} && \multicolumn{4}{c}{Y} & Y$_{-1}$ \\
+        \hline
+          & 0&0&0&0 &\multicolumn{1}{c|}{}& 1&1&0&1 & 0 \\ \hdashline
+        + & 0&1&0&1 &\multicolumn{1}{c|}{}              \\ \cline{1-5}
+        0 & 0&1&0&1 &\multicolumn{1}{c|}{}              \\ \cline{7-8}
+          & 0&0&0&1 && 0&\multicolumn{1}{c|}{1}&1&1 & 0 \\ \hdashline
+        + & 1&0&1&1 && &\multicolumn{1}{c|}{}           \\ \cline{1-5}
+        1 & 1&1&0&0 && &\multicolumn{1}{c|}{}           \\ \cline{9-10}
+          & 1&1&1&1 && 0&0&0&\multicolumn{1}{c|}{1}     \\ \hline
+    \end{tabular}
+\end{table}
+
+所以 $\left[x\times y\right]_\text{补}=11110011B=-15$
+
+\subsubsection*{(4)}
+
+$X=0101,Y=0101,-Y=1011$，有
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{cccccccccc}
+        \hline
+        & \multicolumn{4}{c}{R} && \multicolumn{4}{c}{Q} \\
+        \hline
+          & 0&0&0&0 && 1&0&\multicolumn{1}{c|}{1}   \\ \hdashline
+        + & 1&0&1&1 && \multicolumn{3}{c|}{}        \\ \cline{1-5}
+          & 1&0&1&1 && 1&0&\multicolumn{1}{c|}{1}&0 \\ \hdashline
+          & 0&1&1&1 && 0&\multicolumn{1}{c|}{1}&0   \\
+        + & 0&1&0&1 && \multicolumn{2}{c|}{}        \\ \cline{1-5}
+          & 1&1&0&0 && 0&\multicolumn{1}{c|}{1}&0&0 \\ \hdashline
+          & 1&0&0&0 && \multicolumn{1}{c|}{1}&0&0   \\
+        + & 0&1&0&1 && \multicolumn{1}{c|}{}        \\ \cline{1-5}
+          & 1&1&0&1 && \multicolumn{1}{c|}{1}&0&0&0 \\ \hdashline
+          & 1&0&1&1 &\multicolumn{1}{c|}{}& 0&0&0   \\
+        + & 0&1&0&1 &\multicolumn{1}{c|}{}          \\ \cline{1-5}
+          & 0&0&0&0 &\multicolumn{1}{c|}{}& 0&0&0&1 \\ \hline
+    \end{tabular}
+\end{table}
+
+所以 $\left[x/y\right]_\text{原}=-0001B=-1$，余数为 $0000B=0$
+
+\subsubsection*{(5)}
+
+$X=00000101,Y=1101,-Y=0011$，有
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{cccccccccc}
+        \hline
+        & \multicolumn{4}{c}{R} && \multicolumn{4}{c}{Q} \\
+        \hline
+          & 0&0&0&0 && 0&1&0&\multicolumn{1}{c|}{1} \\ \hdashline
+        + & 1&1&0&1 &\multicolumn{5}{c|}{}          \\ \cline{1-5}
+          & 1&1&0&1 && 0&1&0&\multicolumn{1}{c|}{1} \\ \hdashline
+          & 1&0&1&0 && 1&0&\multicolumn{1}{c|}{1}&1 \\
+        + & 0&0&1&1 &\multicolumn{4}{c|}{}          \\ \cline{1-5}
+          & 1&1&0&1 && 1&0&\multicolumn{1}{c|}{1}&1 \\ \hdashline
+          & 1&0&1&1 && 0&\multicolumn{1}{c|}{1}&1&1 \\
+        + & 0&0&1&1 &\multicolumn{3}{c|}{}          \\ \cline{1-5}
+          & 1&1&1&0 && 0&\multicolumn{1}{c|}{1}&1&1 \\ \hdashline
+          & 1&1&0&0 && \multicolumn{1}{c|}{1}&1&1&1 \\
+        + & 0&0&1&1 &\multicolumn{2}{c|}{}          \\ \cline{1-5}
+          & 1&1&1&1 && \multicolumn{1}{c|}{1}&1&1&1 \\ \hdashline
+          & 1&1&1&1 &\multicolumn{1}{c|}{}& 1&1&1&1 \\
+        + & 0&0&1&1 &\multicolumn{1}{c|}{}          \\ \cline{1-5}
+          & 0&0&1&0 &\multicolumn{1}{c|}{}& 1&1&1&0 \\
+          & &&&     && + &&&1                       \\ \cline{7-10}
+          & 0&0&1&0 && 1&1&1&1                      \\ \hline
+    \end{tabular}
+\end{table}
+
+所以 $\left[x/y\right]_\text{补}=1111B=-1$，余数为 $0010B=2$
+
+\subsection*{9.}
+
+\begin{itemize}
+  \item 左规: 运算结果为 $0.b\cdots b$ 时，需要进行左规。
+  将尾数的数值位逐次左移，尾数每左移一位，对应的阶码减 1，直到将第一位“1”移到小数点左边，使其变成标准的规格化形式。
+  \item 右规: 运算结果为 $1b.b\cdots b$ 时，需要进行右规。
+  将尾数整体右移一位，同时对应的阶码加 1，使尾数恢复为规格化形式。
+\end{itemize}
+
+\subsection*{12.}
+
+\subsubsection*{(1)}
+
+由
+$x=0.75=1.1B\times2^{-1},y=-65.25=-1.00000101B\times2^6$
+有
+$s_x=0,E_x=01111110B,M_x=0(1).10\cdots0,
+s_y=1,E_y=10000101B,M_y=1(1).000001010\cdots0$
+，所以
+$\Delta E=-7,M'_x=0(0).000000110\cdots0$
+，所以
+$M_b=1(1).00000010\cdots0,E_b=10000101B$
+，所以
+$0.75+(-65.25)=-1.0000001B\times2^6=-64.5$
+
+\end{document}
