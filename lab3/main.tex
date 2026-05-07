@@ -959,6 +959,28 @@ endmodule
     \caption{数字时钟仿真结果(c)}
 \end{figure}
 
+其中，LED 输出的真值表为
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        Cnt & LED\_R & LED\_G & LED\_B \\
+        \hline
+        0 & 0 & 0 & 0 \\
+        1 & 1 & 0 & 0 \\
+        2 & 1 & 1 & 0 \\
+        3 & 0 & 1 & 0 \\
+        4 & 0 & 1 & 1 \\
+        5 & 1 & 1 & 1 \\
+        6 & 1 & 0 & 1 \\
+        7 & 0 & 0 & 1 \\
+        8 & 0 & 0 & 0 \\
+        \hline
+    \end{tabular}
+    \caption{数字时钟LED输出真值表}
+\end{table}
+
 \subsection{错误现象及分析}
 
 最开始我化简 INErr 的表达式有误，虽然通过了在线平台的测试，但我在检查时发现了异常。
