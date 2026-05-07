@@ -992,4 +992,41 @@ endmodule
     \caption{数字时钟实验中出现的错误}
 \end{figure}
 
+\section{思考题}
+
+\subsection{异步清零和异步置数的 4 位计数器}
+
+Logisim 中的 0,1 引脚可以直接用来实现异步清零和异步置数的功能。
+我们添加引脚 AsyncCLR 和 AsyncLD，电路图如下
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/p1.png}
+    \caption{异步清零和异步置数的 4 位计数器电路图}
+\end{figure}
+
+\newpage
+
+\subsection{模10计数器}
+
+让计数器在 6-15 之间循环，即可实现。具体来说，当计数器达到最大值 15 时，
+RCO 会输出高电平，可以将其连回 LD，重新加载初始值 6 即可。电路图如下
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}
+        \node[
+            flipflop JK,
+            flipflop def={t1=D, t3=En, t4=RCO, tu=LD}
+        ] (cnt) at (0,0) {};
+        \node[left] at (cnt.pin 1) {0110};
+        \node[left] at (cnt.pin 3) {1};
+        \draw (cnt.pin 4) -- ++(0.3,0) node[circ]{} |- (cnt.up);
+        \draw (cnt.pin 4) -- ++(1,0) node[right]{RCO};
+        \draw (cnt.pin 6) -- ++(1,0) node[right]{Q};
+        \draw (cnt.pin 2) -- ++(-1,0) node[left]{CLK};
+    \end{circuitikz}
+    \caption{模10计数器电路图}
+\end{figure}
+
 \end{document}
