@@ -1,0 +1,189 @@
+\documentclass[12pt, a4paper]{ctexart}
+\usepackage{geometry}
+\geometry{left=2.5cm, right=2.5cm, top=3cm, bottom=3cm}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage{float}
+\usepackage{listings}
+\usetikzlibrary{arrows, shapes.gates.logic.US}
+\ctikzset{
+    logic ports=ieee,
+    logic ports/scale=0.8,
+    multipoles/flipflop/pin spacing=0.4
+}
+\input{risc-v.tex}
+\lstset{
+    basicstyle=\ttfamily\small,
+    frame=single,
+    framesep=5pt,
+    xleftmargin=10pt,
+    xrightmargin=10pt,
+    breaklines=true
+}
+
+\begin{document}
+
+\section*{第7章习题}
+
+\subsection*{2.}
+
+\subsubsection*{(4)}
+
+\begin{itemize}
+    \item 在寄存器中：寄存器直接寻址
+    \item 在存储器中：寄存器间接寻址，直接寻址，间接寻址，基址寻址，变址寻址，相对寻址
+\end{itemize}
+
+\subsubsection*{(9)}
+
+\begin{itemize}
+    \item 转移跳转指令不会返回执行，调用指令会返回继续执行。
+    \item 一般不需要，因为 CPU 在跳转之前会自动将下一条指令的地址压入栈中，
+    或者放入特定的寄存器 （LR）中，返回时 CPU 会直接读取存在特定位置的地址，
+    不需要提供地址码字段。不过如果是较早期的 CPU，可能需要。
+\end{itemize}
+
+\subsection*{3.}
+
+假定题目中的 $PC=258$ 为取指前的 $PC$，则取指后 $PC=260$，位移量为 $-40$，
+补码为 \texttt{D8H}，所以该转移指令第二字节的内容应为 \texttt{D8H}。
+
+\subsection*{4.}
+
+\subsubsection*{(1)}
+
+$EA=A+(I)=\mathtt{1200H}+\mathtt{FCH}=\mathtt{12FCH}$
+
+\subsubsection*{(2)}
+
+$EA=(A)=\mathtt{12FCH}$
+
+\subsubsection*{(3)}
+
+$EA=(R_8)=\mathtt{1200H}$
+
+\subsection*{6.}
+
+$k_1=1024-\dfrac{k_0}{64}-64k_2$
+
+\subsection*{7.}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c|c|c|c|c|}
+        \multicolumn{2}{c}{} & \multicolumn{1}{c}{Ms[2]} &
+        \multicolumn{1}{c}{} & \multicolumn{1}{c}{Md[2]} \\
+        \cline{2-6}
+        RR & OP[6] & 01 & Rs[3] & 01 & Rd[3] \\ \cline{2-7}
+        RI & OP[6] & 00 & 000   & 01 & Rd[3] & Imm[16] \\ \cline{2-7}
+        RS & OP[6] & 01 & Rs[3] & 10 & Rd[3] \\ \cline{2-7}
+        RX & OP[6] & 01 & Rs[3] & 11 & Rx[3] & Ad[16]  \\ \cline{2-8}
+        XI & OP[6] & 00 & 000   & 11 & Rx[3] & Imm[16] & Ad[16] \\ \cline{2-8}
+        SI & OP[6] & 00 & 000   & 10 & Rd[3] & Imm[16] \\ \cline{2-7}
+        SS & OP[6] & 10 & Rs[3] & 10 & Rd[3] \\ \cline{2-6}
+    \end{tabular}
+\end{table}
+
+其中 $OP$ 表示 6 位操作码；$M_S$ 和 $M_D$ 分别表示源操作数和目的操作数的 2 位寻址方式特征码；
+$R_S$ 和 $R_D$ 分别表示源操作数和目的操作数所使用的 3 位通用寄存器编号
+（当寻址方式为变址时，$R_X$ 特指用作变址寄存器的 3 位通用寄存器编号）；
+$IMM$ 表示 16 位立即数，$A_D$ 表示 16 位目的操作数形式地址。
+
+\subsection*{8.}
+
+\subsubsection*{(1)}
+
+16 条指令，8 个通用寄存器，16 位 MAR 和 16 位 MDR。
+
+\subsubsection*{(2)}
+
+\texttt{0000H} 至 \texttt{FFFFH}。
+
+\subsubsection*{(3)}
+
+\texttt{add (R4), (R5)+} 对应 \texttt{0010 001 100 010 101B}。
+
+执行后 \texttt{R5} 的内容变为 \texttt{5679H}，\texttt{5678H} 的内容变为 \texttt{68ACH}。
+
+\subsection*{9.}
+
+假设 \texttt{s0 = A\_upper20, s1 = A\_lower12}，
+输出 \texttt{A\_upper20\_adjusted} 在 \texttt{a0}，
+则用以下方式可以得到
+
+\subsubsection*{(1)}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+srai    a0, s1, 11
+xor     a0, s0, a0
+\end{lstlisting}
+
+\subsubsection*{(2)}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+srli    a0, s1, 11
+add     a0, s0, a0
+\end{lstlisting}
+
+\subsection*{10.}
+
+当 \texttt{offset[11]} 为 0 时应为 \texttt{offset[31:12] + 0}，
+当 \texttt{offset[11]} 为 1 时应为 \texttt{offset[31:12] + 1}，
+所以高 20 位可以表示为 \texttt{offset[31:12] + offset[11]}。
+
+\subsection*{11.}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+slli    t1, t0, 3
+sub     t1, t1, t0
+\end{lstlisting}
+
+\subsection*{13.}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+loop:
+  add   t0, zero, zero    # 初始化寄存器：t0 = 0 + 0
+  beq   a1, zero, finish  # 条件跳转：如果 a1 == 0，跳转到 finish
+  add   t0, t0, a0        # 累加：t0 = t0 + a0
+  addi  a1, a1, -1        # 计数器递减：a1 = a1 - 1
+  j     loop              # 无条件跳转：回到 loop 标签，继续循环
+
+finish:
+  addi  t0, t0, 100       # 加偏置：t0 = t0 + 100
+  add   a0, t0, zero      # 返回值赋值：a0 = t0 + 0
+\end{lstlisting}
+
+\subsection*{15.}
+
+\subsubsection*{(1)}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+addi    t1, t0, 31
+\end{lstlisting}
+
+\subsubsection*{(2)}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+slli    t1, t0, 16
+srli    t1, t1, 16
+\end{lstlisting}
+
+\subsection*{17.}
+
+\texttt{beq} 含义：Branch if EQual 相等则跳转
+
+问题：offset 只有 12 位，\texttt{here} 和 \texttt{there} 之间的指令数量可能超过 offset
+
+修改：
+
+\begin{lstlisting}
+here:
+  bne   t0, t2, skip
+  j     there
+skip:
+  ......
+there:
+  addi  t1, a0, 4
+\end{lstlisting}
+
+\end{document}
