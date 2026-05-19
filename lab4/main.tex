@@ -403,37 +403,25 @@ endmodule
 
 \subsection{整体方案设计}
 
-\begin{lstlisting}[language=Verilog, caption={}]
-module alu (
-    input [31:0] A,
-    input [31:0] B,
-    input [3:0] ALUctr,
-    output zero,
-    output reg [31:0] Result
-);
-
-  wire [4:0] shamt = B[4:0];
-  wire less = (ALUctr[3] == 1'b0) ? ($signed(A) < $signed(B)) : (A < B);
-  assign zero = (ALUctr[2:0] == 3'b010) ? (A == B) : (Result == 32'b0);
-
-  always @(*) begin
-    casez (ALUctr)
-      4'b0000: Result = A + B;
-      4'b1000: Result = A - B;
-      4'b?001: Result = A << shamt;
-      4'b?010: Result = {31'b0, less};
-      4'b?011: Result = B;
-      4'b?100: Result = A ^ B;
-      4'b0101: Result = A >> shamt;
-      4'b1101: Result = $signed(A) >>> shamt;
-      4'b?110: Result = A | B;
-      4'b?111: Result = A & B;
-      default: Result = 32'b0;
-    endcase
-  end
-
-endmodule
-\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[>=stealth]
+        \node[draw] (in) {Adder, Shifter, Logic};
+        \node[draw, right=of in] (mux) {MUX};
+        \node[draw, below=of mux] (alu) {ALUctrl};
+        \node[right=of mux] (out) {Result};
+        \draw[->] (in) -- (mux);
+        \draw[->] (mux) -- (out);
+        \draw[->] (alu) -- (mux);
+        \node[left=of in] (AB) {A, B};
+        \draw[->] (AB) -- (in);
+        \node[right=of alu] (ALUctr) {ALUctr};
+        \draw[->] (ALUctr) -- (alu);
+        \node[below=of in] (zero) {zero};
+        \draw[->] (in) -- (zero);
+    \end{tikzpicture}
+    \caption{32位ALU整体方案设计}
+\end{figure}
 
 \begin{table}[H]
     \centering
@@ -455,7 +443,7 @@ endmodule
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.55\textwidth]{assets/exp5/circuit.png}
+    \includegraphics[width=0.55\textwidth]{assets/exp5/circuit1.png}
     \caption{32位ALU电路图}
 \end{figure}
 
@@ -465,19 +453,25 @@ endmodule
     \caption{32位ALU原理图}
 \end{figure}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{assets/exp5/circuit2.png}
+    \caption{ALU控制信号生成部件电路图}
+\end{figure}
+
 \subsection{仿真结果}
 
 \begin{figure}[H]
     \centering
-    \subcaptionbox{}{\includegraphics[width=0.7\textwidth]{assets/exp5/sim1.png}}
-    \subcaptionbox{}{\includegraphics[width=0.7\textwidth]{assets/exp5/sim2.png}}
+    \subcaptionbox{}{\includegraphics[width=0.8\textwidth]{assets/exp5/sim1.png}}
+    \subcaptionbox{}{\includegraphics[width=0.8\textwidth]{assets/exp5/sim2.png}}
     \caption{32位ALU仿真结果(1)}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \subcaptionbox{}{\includegraphics[width=0.7\textwidth]{assets/exp5/sim3.png}}
-    \subcaptionbox{}{\includegraphics[width=0.7\textwidth]{assets/exp5/sim4.png}}
+    \subcaptionbox{}{\includegraphics[width=0.8\textwidth]{assets/exp5/sim3.png}}
+    \subcaptionbox{}{\includegraphics[width=0.8\textwidth]{assets/exp5/sim4.png}}
     \caption{32位ALU仿真结果(2)}
 \end{figure}
 
@@ -487,16 +481,17 @@ endmodule
         \hline
         ALUctr & 运算 \\
         \hline
-        0000 & 加法 \\
-        1000 & 减法 \\
-        ?001 & 逻辑左移 \\
-        ?010 & 小于 \\
-        ?011 & 直接输出B \\
-        ?100 & 按位异或 \\
+        0000 & 加法运算 \\
+        0001 & 逻辑左移 \\
+        0010 & 带符号数小于 \\
+        0011 & 无符号数小于 \\
+        0100 & 异或运算 \\
         0101 & 逻辑右移 \\
+        0110 & 或运算 \\
+        0111 & 与运算 \\
+        1000 & 减法 \\
         1101 & 算术右移 \\
-        ?110 & 按位或 \\
-        ?111 & 按位与 \\
+        1111 & 取操作数B \\
         \hline
     \end{tabular}
     \caption{32位ALU真值表}
@@ -505,5 +500,39 @@ endmodule
 \subsection{错误现象及分析}
 
 在完成实验的过程中，没有遇到任何错误。
+
+\section{思考题}
+
+\subsection{64 位二进制快速加法器}
+
+与 32 位快速加法器类似，电路图如下
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/p1.png}
+    \caption{64位二进制快速加法器电路图}
+\end{figure}
+
+\subsection{32 位快速乘法器}
+
+可以用分治的思想，使用 4 个 16 位快速乘法器来实现，这里使用 Logisim 内置元件
+\footnote{
+    Logisim 的内置加法器 Cout 引脚异常，有概率无法正常使用。
+    具体来说，Cout 输出引脚被错误的显示为输入引脚，
+    导致电路在初始状态无法正常运行。
+    需要手动重新连接一次，才能短暂地正常使用。
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.1\textwidth]{assets/p2.1.png}
+        \caption{Logisim 异常的内置加法器}
+    \end{figure}
+}
+，电路图如下
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{assets/p2.png}
+    \caption{32位快速乘法器电路图}
+\end{figure}
 
 \end{document}
