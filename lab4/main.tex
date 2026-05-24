@@ -501,6 +501,49 @@ endmodule
 
 在完成实验的过程中，没有遇到任何错误。
 
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        序号 & ALUctr & A & B & Result & Zero \\ \hline
+        1 & 0000(ADD) & 0x00000000 & 0x00000000 & 0x00000000 & 1 \\ \hline
+        2 & 0000(ADD) & 0x00000001 & 0x00000001 & 0x00000002 & 0 \\ \hline
+        3 & 0000(ADD) & 0x7FFFFFFF & 0x00000001 & 0x80000000 & 0 \\ \hline
+        4 & 0000(ADD) & 0xFFFFFFFF & 0x00000001 & 0x00000000 & 1 \\ \hline
+        5 & 0000(ADD) & 0x80000000 & 0x80000000 & 0x00000000 & 1 \\ \hline
+        6 & 0000(ADD) & 0x12345678 & 0x9ABCDEF0 & 0xACF13568 & 0 \\ \hline
+        7 & 1000(SUB) & 0x00000005 & 0x00000003 & 0x00000002 & 0 \\ \hline
+        8 & 1000(SUB) & 0x00000003 & 0x00000005 & 0xFFFFFFFE & 0 \\ \hline
+        9 & 1000(SUB) & 0x80000000 & 0x00000001 & 0x7FFFFFFF & 0 \\ \hline
+        10 & 1000(SUB) & 0x00000000 & 0x00000001 & 0xFFFFFFFF & 0 \\ \hline
+        11 & 1000(SUB) & 0x12345678 & 0x9ABCDEF0 & 0x77777788 & 0 \\ \hline
+        12 & 0111(AND) & 0xF0F0F0F0 & 0x0F0F0F0F & 0x00000000 & 0 \\ \hline
+        13 & 0111(AND) & 0xFFFFFFFF & 0x12345678 & 0x12345678 & 0 \\ \hline
+        14 & 0111(AND) & 0x12345678 & 0x9ABCDEF0 & 0x12345670 & 0 \\ \hline
+        15 & 0110(OR) & 0xF0F0F0F0 & 0x0F0F0F0F & 0xFFFFFFFF & 0 \\ \hline
+        16 & 0110(OR) & 0x00000000 & 0x87654321 & 0x87654321 & 0 \\ \hline
+        17 & 0110(OR) & 0x12345678 & 0x9ABCDEF0 & 0x9ABCDEF8 & 0 \\ \hline
+        18 & 0100(XOR) & 0xAAAAAAAA & 0x55555555 & 0xFFFFFFFF & 0 \\ \hline
+        19 & 0100(XOR) & 0xFFFFFFFF & 0x12345678 & 0xEDCBA987 & 0 \\ \hline
+        20 & 0100(XOR) & 0x12345678 & 0x9ABCDEF0 & 0x88888888 & 0 \\ \hline
+        21 & 0001(SLL) & 0x00000001 & 0x00000000 & 0x00000001 & 0 \\ \hline
+        22 & 0001(SLL) & 0x00000001 & 0x0000001F & 0x80000000 & 0 \\ \hline
+        23 & 0001(SLL) & 0x80000001 & 0x00000004 & 0x00000010 & 0 \\ \hline
+        24 & 0101(SRL) & 0x80000000 & 0x0000001F & 0x00000001 & 0 \\ \hline
+        25 & 0101(SRL) & 0xFFFFFFFF & 0x00000004 & 0x0FFFFFFF & 0 \\ \hline
+        26 & 1101(SRA) & 0x80000000 & 0x0000001F & 0xFFFFFFFF & 0 \\ \hline
+        27 & 1101(SRA) & 0xFFFFFFFF & 0x00000004 & 0xFFFFFFFF & 0 \\ \hline
+        28 & 1101(SRA) & 0x7FFFFFFF & 0x00000004 & 0x07FFFFFF & 0 \\ \hline
+        29 & 0010(SLT) & 0xFFFFFFFF & 0x00000001 & 0x00000001 & 0 \\ \hline
+        30 & 0010(SLT) & 0x7FFFFFFF & 0x80000000 & 0x00000000 & 0 \\ \hline
+        31 & 0010(SLT) & 0x80000000 & 0x80000000 & 0x00000000 & 1 \\ \hline
+        32 & 0011(SLTU) & 0xFFFFFFFF & 0x00000001 & 0x00000000 & 0 \\ \hline
+        33 & 0011(SLTU) & 0x00000001 & 0x00000001 & 0x00000000 & 1 \\ \hline
+        34 & 0011(SLTU) & 0x80000000 & 0x7FFFFFFF & 0x00000000 & 0 \\ \hline
+    \end{tabular}
+    \caption{ALU 功能测试表}
+\end{table}
+
 \section{思考题}
 
 \subsection{64 位二进制快速加法器}
@@ -534,5 +577,55 @@ endmodule
     \includegraphics[width=0.6\textwidth]{assets/p2.png}
     \caption{32位快速乘法器电路图}
 \end{figure}
+
+\subsection{修改 ALU}
+
+新增循环左移，使得真值表变为
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        ALUctr & 运算 \\
+        \hline
+        0000 & 加法运算 \\
+        0001 & 逻辑左移 \\
+        0010 & 带符号数小于 \\
+        0011 & 无符号数小于 \\
+        0100 & 异或运算 \\
+        0101 & 逻辑右移 \\
+        0110 & 或运算 \\
+        0111 & 与运算 \\
+        1000 & 减法 \\
+        1001 & 循环左移 \\
+        1101 & 算术右移 \\
+        1111 & 取操作数B \\
+        \hline
+    \end{tabular}
+    \caption{32位ALU真值表}
+\end{table}
+
+这里只需修改 ALU 控制信号生成部件的电路图即可
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{assets/p3.png}
+    \caption{修改后的ALU控制信号生成部件电路图}
+\end{figure}
+
+此时的仿真结果如下
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{assets/p3.1.png}
+    \caption{修改后的ALU仿真结果}
+\end{figure}
+
+\subsection{比较运算的实现}
+
+\begin{itemize}
+    \item 独立比较器：延迟低，但硬件面积较大
+    \item 减法器和标志位：资源复用率高，但延迟较大
+\end{itemize}
 
 \end{document}
