@@ -712,4 +712,34 @@ Logisim-Ita 长时间没有更新，评测机上的版本更是搞笑；
 
 在完成实验的过程中，没有遇到任何错误。
 
+\section{思考题}
+
+\subsection{ROM 滚动显示器}
+
+使用计数器和 MUX 即可实现，电路图如下
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{assets/p1.png}
+    \caption{ROM 滚动显示器电路图}
+\end{figure}
+
+仿真结果如下
+
+\begin{figure}[H]
+    \centering
+    \subcaptionbox{}{\includegraphics[width=0.4\textwidth]{assets/p1.1.png}}
+    \subcaptionbox{}{\includegraphics[width=0.4\textwidth]{assets/p1.2.png}}
+    \caption{ROM 滚动显示器仿真结果}
+\end{figure}
+
+\subsection{时钟触发边沿不一致的影响}
+
+可能导致数据读写错乱、时序违例与逻辑混乱，从而引发不可预期的行为，甚至系统崩溃。
+
+\subsection{CPU 停机方法}
+
+软件层面上，可在程序的末尾添加一条跳转到自身当前地址的无条件跳转指令，即
+\texttt{loop: j loop}，使 CPU 进入死循环，从而达到停机的效果。
+
 \end{document}
