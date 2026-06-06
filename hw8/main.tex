@@ -1,0 +1,290 @@
+\documentclass[12pt, a4paper]{ctexart}
+\usepackage{geometry}
+\geometry{left=2.5cm, right=2.5cm, top=3cm, bottom=3cm}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage{float}
+\usepackage{listings}
+\usetikzlibrary{arrows, shapes.gates.logic.US}
+\ctikzset{
+    logic ports=ieee,
+    logic ports/scale=0.8,
+    multipoles/flipflop/pin spacing=0.4
+}
+\input{risc-v.tex}
+\lstset{
+    basicstyle=\ttfamily\small,
+    frame=single,
+    framesep=5pt,
+    xleftmargin=10pt,
+    xrightmargin=10pt,
+    breaklines=true
+}
+
+\begin{document}
+
+\section*{第8章习题}
+
+\subsection*{3.}
+
+\subsubsection*{(1)}
+
+8 位（1 字节）
+
+\subsubsection*{(2)}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}
+        \node[
+            one bit adder,
+            muxdemux def={NB=0}
+        ] (adder1) at (0,0) {+};
+        \node[
+            one bit adder,
+            muxdemux def={NB=0},
+            anchor=lpin 1
+        ] (adder2) at (adder1.rpin 1) {+}; 
+        \node[
+            muxdemux,
+            muxdemux def={Lh=3, Rh=1, w=2, NL=2, NR=1, NT=0, NB=1},
+            muxdemux label={L1=1, L2=0},
+            anchor=lpin 2
+        ] (mux) at (adder2.rpin 1) {};
+        \draw (adder1.rpin 1) node[circ]{} -- ++(0,0.5) -| (mux.lpin 1);
+        \node[left] at (adder1.lpin 1) {PC};
+        \node[left] at (adder1.lpin 2) {2};
+        \node[right] at (mux.rpin 1) {nextPC};
+        \node[left] at (adder2.lpin 2) {\{8\{Imm8[7]\}, Imm8\}};
+        \node[below right] at (mux.bpin 1) {
+            $\overline{ZF+(SF\oplus OF)}\cdot Bgt$
+        };
+    \end{circuitikz}
+\end{figure}
+
+\subsection*{4.}
+
+\begin{itemize}
+    \item RegWr=0 时所有需要写入寄存器的指令无法执行
+    \item ALUASrc=0 时 J 型指令无法执行
+    \item Branch=0 时 B 型指令无法执行
+    \item Jump=0 时 J 型指令无法执行
+    \item MemWr=0 时 store 指令无法执行
+    \item MemtoReg=0 时 load 指令无法执行
+\end{itemize}
+
+\subsection*{5.}
+
+\begin{itemize}
+    \item RegWr=1 时所有不需要写入寄存器的指令无法执行
+    \item ALUASrc=1 时所有除 J 型指令以外需要 ALU 的指令无法执行
+    \item Branch=1 时除 B 型以外的指令无法执行
+    \item Jump=1 时除 J 型以外的指令无法执行
+    \item MemWr=1 时除 store 以外的指令无法执行
+    \item MemtoReg=1 时除 load 以外的指令无法执行
+\end{itemize}
+
+\subsection*{6.}
+
+\subsubsection*{(1)}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+xor     rs, rs, rt
+xor     rt, rs, rt
+xor     rs, rs, rt
+\end{lstlisting}
+
+\subsubsection*{(2)}
+
+5\%
+
+\subsubsection*{(3)}
+
+不能在单周期中实现，因为只有一个写入端口。多周期可以在不用时钟周期中写入，可以实现。
+
+\subsection*{10.}
+
+\subsubsection*{(1)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        异常或中断 & 指令类型 & 检测到的时钟周期 \\ \hline
+        除数为 0 & 除法指令 & EX 阶段 \\
+        溢出 & 带溢出检测的算术指令 & EX 阶段 \\
+        无效指令操作码 & 非法指令 & ID 阶段 \\
+        无效指令地址 & 任何指令 & IF 阶段 \\
+        无效数据地址 & 访存指令 & M 阶段 \\
+        缺页 & 访存指令 & M 阶段 \\
+        访问越权 & 访存指令 & M 阶段 \\
+        外部中断 & 任何指令 & IF 阶段 \\ \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection*{(2)}
+
+\begin{enumerate}
+    \item 保存断点和程序状态：正确计算断点值，程序状态储存在 PSWR 中。
+    \item 识别异常/中断源并转相应处理程序执行：使用软件识别内部异常，使用软件或硬件识别外部中断。
+\end{enumerate}
+
+\subsection*{11.}
+
+\subsubsection*{(1)}
+
+不能，因为最慢的还是存储单元的 200ps。
+
+\subsubsection*{(2)}
+
+无影响，因为最慢的还是存储单元的 200ps。
+
+\subsubsection*{(3)}
+
+有影响，现在最慢的是 ALU 的 210ps，会让流水线的时钟周期变为 210ps。
+
+\subsection*{13.}
+
+\subsubsection*{(1)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|ccc|ccc|}
+        \hline
+        80ps & 30ps & 60ps & 50ps & 70ps & 10ps \\ \hline
+        \multicolumn{3}{|c|}{170ps} & \multicolumn{3}{|c|}{130ps} \\ \hline
+    \end{tabular}
+\end{table}
+
+如图，时钟周期为 190ps，指令吞吐率为 5.26 GIPS，指令执行时间为 380ps。
+
+\subsubsection*{(2)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|cc|cc|cc|}
+        \hline
+        80ps & 30ps & 60ps & 50ps & 70ps & 10ps \\ \hline
+        \multicolumn{2}{|c|}{110ps} & \multicolumn{2}{|c|}{110ps} &
+        \multicolumn{2}{|c|}{80ps} \\ \hline
+    \end{tabular}
+\end{table}
+
+如图，时钟周期为 130ps，指令吞吐率为 7.69 GIPS，指令执行时间为 390ps。
+
+\subsubsection*{(3)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|cc|c|cc|}
+        \hline
+        80ps & 30ps & 60ps & 50ps & 70ps & 10ps \\ \hline
+        \multicolumn{1}{|c|}{80ps} & \multicolumn{2}{|c|}{90ps} &
+        \multicolumn{1}{|c|}{50ps} & \multicolumn{2}{|c|}{80ps} \\ \hline
+    \end{tabular}
+\end{table}
+
+如图，时钟周期为 110ps，指令吞吐率为 9.09 GIPS，指令执行时间为 440ps。
+
+\subsubsection*{(4)}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|cc|}
+        \hline
+        80ps & 30ps & 60ps & 50ps & 70ps & 10ps \\ \hline
+        \multicolumn{1}{|c|}{80ps} & \multicolumn{1}{|c|}{30ps} &
+        \multicolumn{1}{|c|}{60ps} & \multicolumn{1}{|c|}{50ps} &
+        \multicolumn{2}{|c|}{80ps} \\ \hline
+    \end{tabular}
+\end{table}
+
+如图，时钟周期为 100ps，指令吞吐率为 10.00 GIPS，指令执行时间为 500ps。
+
+\subsection*{14.}
+
+\subsubsection*{(1)}
+
+(1, 2), (2, 3), (2, 4), (3, 4)
+
+\subsubsection*{(2)}
+
+假设寄存器堆支持半周期读写，修改后如下
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+add     s3, s1, s0
+nop
+nop
+add     t2, s3, s3
+nop
+nop
+lw      t1, 0(t2)
+nop
+nop
+add     t3, t1, t2
+\end{lstlisting}
+
+\subsubsection*{(3)}
+
+不能完全解决，修改后如下
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+add     s3, s1, s0
+add     t2, s3, s3
+lw      t1, 0(t2)
+nop
+add     t3, t1, t2
+\end{lstlisting}
+
+\subsection*{15.}
+
+\subsubsection*{(1)}
+
+\begin{itemize}
+    \item 从指令 1 的 EX/M 转发到指令 2 的 EX 阶段
+    \item 从指令 2 的 EX/M 转发到指令 3 的 EX 阶段
+    \item 从指令 3 的 M/WB 转发到指令 4 的 EX 阶段
+\end{itemize}
+
+\subsubsection*{(2)}
+
+存在于指令 3 和指令 4 之间
+
+\subsubsection*{(3)}
+
+\begin{itemize}
+    \item 指令 1 在 WB 阶段
+    \item 指令 1 在 M 阶段
+    \item 指令 1 在 EX 阶段
+    \item 指令 1 在 ID 阶段
+    \item 指令 1 在 IF 阶段
+\end{itemize}
+
+\begin{itemize}
+    \item t1, t2 正被读出
+    \item s3 将被写入
+\end{itemize}
+
+\subsection*{17.}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+lw      s2, 100(s6)
+add     s6, s4, s7
+add     s2, s2, s3
+lw      s3, 200(s7)
+lw      s2, 300(s8)
+sub     s3, s4, s6
+beq     s2, s8, Loop
+\end{lstlisting}
+
+\subsection*{18.}
+
+\subsubsection*{(1)}
+
+2 个时钟周期
+
+\subsubsection*{(2)}
+
+\texttt{bne t0, s5, Exit} 会发生阻塞，需要阻塞 1 个时钟周期
+
+\end{document}
